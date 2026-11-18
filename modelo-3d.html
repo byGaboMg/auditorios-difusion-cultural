@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Modelo 3D Auditorios</title>
+<meta name="description" content="Prueba: modelo 3D de los auditorios A y B generado a partir de los planos y medidas, con vista desde cualquier butaca.">
+<meta name="theme-color" content="#7b1e3c">
+<style>
+:root{
+  --brand:#7b1e3c; --bg:#f5f3ef; --surface:#ffffff; --surface-2:#f8f5f1; --ink:#1f1b19; --muted:#6f6762; --line:#e4ded6;
+  --accent:#7b1e3c; --accent-ink:#fff; --scene:#e7e1d8; --sel:#f2b705;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#151312; --surface:#1e1b19; --surface-2:#252220; --ink:#efe9e4; --muted:#a59c95; --line:#36302c;
+    --accent:#d9718f; --accent-ink:#1a0d12; --scene:#16181b; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#151312; --surface:#1e1b19; --surface-2:#252220; --ink:#efe9e4; --muted:#a59c95; --line:#36302c;
+  --accent:#d9718f; --accent-ink:#1a0d12; --scene:#16181b; color-scheme: dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+body::before{content:"";display:block;height:6px;background:var(--brand)}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.bar{display:flex;align-items:center;gap:14px;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--surface);flex-wrap:wrap}
+.logo{background:#fff;border:1px solid var(--line);border-radius:12px;padding:6px 10px;line-height:0;flex:none}
+.logo img{height:36px;width:auto}
+.ttl{min-width:0;flex:1 1 200px}
+.ttl b{display:block;font-size:18px;line-height:1.2}
+.ttl small{color:var(--muted);font-size:13px}
+.pill{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:2px 8px;margin-left:6px;vertical-align:2px}
+.seg{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:3px}
+.seg button{border:0;background:none;padding:7px 14px;border-radius:9px;font-weight:700;color:var(--muted);white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+
+.main{display:grid;grid-template-columns:minmax(0,1fr) 330px;height:calc(100vh - 6px - 65px);height:calc(100dvh - 6px - 65px);min-height:520px}
+.view{position:relative;background:var(--scene);overflow:hidden;min-width:0;touch-action:none}
+.view canvas{display:block;width:100%;height:100%}
+.labels{position:absolute;inset:0;pointer-events:none}
+.lbl3d{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:rgba(31,27,25,.72);padding:3px 8px;border-radius:999px;white-space:nowrap}
+.dim3d{font-size:12px;font-weight:800;color:#1f1b19;background:#ffcf5c;padding:2px 7px;border-radius:6px;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+.hud{position:absolute;left:12px;bottom:12px;right:12px;display:flex;justify-content:space-between;gap:8px;pointer-events:none}
+.hud span{background:var(--surface);color:var(--muted);border:1px solid var(--line);font-size:12px;padding:4px 9px;border-radius:8px;opacity:.95}
+.seatbar{position:absolute;left:50%;top:12px;transform:translateX(-50%);background:var(--ink);color:var(--bg);border-radius:12px;padding:8px 8px 8px 14px;display:flex;gap:10px;align-items:center;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:calc(100% - 24px)}
+.seatbar b{white-space:nowrap}
+.seatbar button{border:0;border-radius:8px;padding:6px 10px;font-weight:700;background:var(--sel);color:#1f1b19;white-space:nowrap}
+.loading{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-weight:600}
+
+aside{border-left:1px solid var(--line);background:var(--bg);overflow:auto;padding:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:12px}
+.card h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.btns button{border:1px solid var(--line);background:var(--surface-2);border-radius:10px;padding:8px 10px;font-weight:600;font-size:14px;text-align:left}
+.btns button:hover{border-color:var(--muted)}
+.btns button.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);background:var(--surface)}
+.search{display:flex;gap:6px}
+.search input{flex:1;min-width:0;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.search button{border:1px solid var(--line);background:var(--accent);color:var(--accent-ink);border-radius:10px;padding:8px 12px;font-weight:700}
+.msg{font-size:13px;color:var(--muted);margin:8px 0 0}
+.msg:empty{display:none}
+.toggles{display:grid;gap:8px}
+.toggles label{display:flex;align-items:center;gap:10px;font-size:14px;cursor:pointer}
+.toggles input{width:18px;height:18px;accent-color:var(--accent)}
+.legend{display:grid;gap:6px;font-size:13px}
+.legend div{display:flex;align-items:center;gap:8px}
+.legend i{width:12px;height:12px;border-radius:3px;flex:none}
+.note{font-size:13px;color:var(--muted);margin:8px 0 0}
+.note b{color:var(--ink)}
+ul.note{padding-left:18px}
+ul.note li{margin:3px 0}
+
+/* Incrustado en la página principal (iframe): sin encabezado propio */
+.embed body::before,.embed .bar{display:none}
+.embed .main{height:100vh;height:100dvh;min-height:0}
+@media (max-width: 860px){
+  .embed .main{height:auto}
+}
+@media (max-width: 860px){
+  .main{grid-template-columns:1fr;height:auto;min-height:0}
+  .view{height:62vh;height:62dvh;min-height:340px}
+  aside{border-left:0;border-top:1px solid var(--line)}
+  .bar{gap:10px;padding:10px 12px}
+  .logo img{height:30px}
+  .ttl b{font-size:16px}
+  .seg{width:100%}
+  .seg button{flex:1}
+  .hud .kbd{display:none}
+}
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<header class="bar">
+  <span class="logo"><img src="difusion-cultural.png" alt="Dirección de Difusión Cultural" width="384" height="133"></span>
+  <div class="ttl"><b>Modelo 3D de los auditorios <span class="pill">Prueba</span></b><small>Generado a partir de los planos y medidas · arrastra para girar</small></div>
+  <div class="seg" role="group" aria-label="Auditorio">
+    <button data-aud="A" aria-pressed="true">Auditorio A</button>
+    <button data-aud="B" aria-pressed="false">Auditorio B</button>
+  </div>
+</header>
+
+<div class="main">
+  <div class="view" id="view">
+    <div class="loading" id="loading">Cargando modelo 3D…</div>
+    <div class="seatbar" id="seatbar" hidden><b id="seatbarTxt"></b><button id="exitSeat" type="button">Salir de la butaca</button></div>
+    <div class="hud"><span id="hudAud">Auditorio A</span><span class="kbd">Arrastra: girar · rueda: zoom · clic derecho: mover · clic en butaca: seleccionar</span></div>
+  </div>
+
+  <aside>
+    <section class="card">
+      <h2>Cámara</h2>
+      <div class="btns" id="cams">
+        <button data-cam="general" type="button">Vista general</button>
+        <button data-cam="escenario" type="button">Desde el escenario</button>
+        <button data-cam="cabina" type="button">Desde la cabina</button>
+        <button data-cam="arriba" type="button">Planta (arriba)</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Ver desde una butaca</h2>
+      <form class="search" id="seatForm" autocomplete="off">
+        <input id="seatQ" type="search" placeholder="ej. H12" aria-label="Butaca">
+        <button type="submit">Ver</button>
+      </form>
+      <p class="msg" id="seatMsg"></p>
+      <p class="note">También puedes tocar una butaca en el modelo y luego «Ver desde aquí».</p>
+    </section>
+
+    <section class="card">
+      <h2>Capas</h2>
+      <div class="toggles">
+        <label><input type="checkbox" id="tWalls" checked> Muros (transparentes)</label>
+        <label><input type="checkbox" id="tCeil"> Techo y plafón</label>
+        <label><input type="checkbox" id="tLabels" checked> Etiquetas</label>
+        <label><input type="checkbox" id="tDims"> Cotas</label>
+        <label><input type="checkbox" id="tBeam"> Haz del proyector</label>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Secciones</h2>
+      <div class="legend" id="legend"></div>
+    </section>
+
+    <section class="card">
+      <h2>Sobre este modelo</h2>
+      <div id="about"></div>
+    </section>
+  </aside>
+</div>
+
+<script type="module">
+import * as THREE from "three";
+import {OrbitControls} from "three/addons/controls/OrbitControls.js";
+import {CSS2DRenderer, CSS2DObject} from "three/addons/renderers/CSS2DRenderer.js";
+
+const $ = s => document.querySelector(s);
+const view = $("#view");
+
+/* ---------- Renderizador ---------- */
+const renderer = new THREE.WebGLRenderer({antialias: true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+view.prepend(renderer.domElement);
+const labelR = new CSS2DRenderer();
+labelR.domElement.className = "labels";
+view.appendChild(labelR.domElement);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(50, 1, .05, 600);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = .08;
+controls.maxPolarAngle = Math.PI * .495;
+scene.add(new THREE.HemisphereLight(0xffffff, 0x5a5048, 1.15));
+const sun = new THREE.DirectionalLight(0xffffff, 1.3); sun.position.set(25, 45, 35); scene.add(sun);
+const fill = new THREE.DirectionalLight(0xffffff, .45); fill.position.set(-30, 20, -20); scene.add(fill);
+
+function setSceneBg(){ scene.background = new THREE.Color(getComputedStyle(document.documentElement).getPropertyValue("--scene").trim() || "#e7e1d8"); }
+setSceneBg();
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", setSceneBg);
+
+function resize(){
+  const w = view.clientWidth, h = view.clientHeight;
+  renderer.setSize(w, h, false); labelR.setSize(w, h);
+  camera.aspect = w / h; camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(view);
+
+/* ---------- Materiales ---------- */
+const M = {
+  floor: new THREE.MeshStandardMaterial({color: 0xbfb4a6, roughness: .95}),
+  tier: new THREE.MeshStandardMaterial({color: 0xa79c90, roughness: .9}),
+  stage: new THREE.MeshStandardMaterial({color: 0x7a5236, roughness: .7}),
+  landing: new THREE.MeshStandardMaterial({color: 0xcdbfa9, roughness: .9}),
+  door: new THREE.MeshStandardMaterial({color: 0x2b2320, roughness: .8, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -2}),
+  wall: new THREE.MeshStandardMaterial({color: 0xefe9df, roughness: .9, transparent: true, opacity: .13, side: THREE.DoubleSide, depthWrite: false}),
+  ceil: new THREE.MeshStandardMaterial({color: 0xd9d2c7, roughness: .9, transparent: true, opacity: .35, side: THREE.DoubleSide, depthWrite: false}),
+  solid: new THREE.MeshStandardMaterial({color: 0xd8d0c4, roughness: .9}),
+  glass: new THREE.MeshStandardMaterial({color: 0x8ec5ff, roughness: .1, transparent: true, opacity: .28, side: THREE.DoubleSide, depthWrite: false}),
+  black: new THREE.MeshStandardMaterial({color: 0x18181a, roughness: .95, side: THREE.DoubleSide}),
+  metal: new THREE.MeshStandardMaterial({color: 0x55585e, roughness: .4, metalness: .6}),
+  cyc: new THREE.MeshStandardMaterial({color: 0x9fc4ff, emissive: 0x2a4a7a, emissiveIntensity: .5, side: THREE.DoubleSide}),
+  proj: new THREE.MeshStandardMaterial({color: 0xf76707, roughness: .5}),
+  beam: new THREE.MeshBasicMaterial({color: 0xffd34d, transparent: true, opacity: .16, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending}),
+  sr: new THREE.MeshStandardMaterial({color: 0x2f62c9}),
+  dimLine: new THREE.LineBasicMaterial({color: 0xffb400, depthTest: false, transparent: true}),
+  dimDot: new THREE.MeshBasicMaterial({color: 0xffb400, depthTest: false, transparent: true})
+};
+
+/* ---------- Ayudantes de geometría (x = lateral, d = profundidad hacia el público, y = altura) ---------- */
+function prism(pts, y0, y1, mat){
+  const shape = new THREE.Shape(pts.map(([x, d]) => new THREE.Vector2(x, -d)));
+  const geo = new THREE.ExtrudeGeometry(shape, {depth: Math.max(.001, y1 - y0), bevelEnabled: false, curveSegments: 1});
+  geo.rotateX(-Math.PI / 2); geo.translate(0, y0, 0);
+  return new THREE.Mesh(geo, mat);
+}
+function flat(pts, y, mat, yFn){
+  const geo = new THREE.ShapeGeometry(new THREE.Shape(pts.map(([x, d]) => new THREE.Vector2(x, -d))));
+  geo.rotateX(-Math.PI / 2);
+  const p = geo.attributes.position;
+  for (let i = 0; i < p.count; i++) p.setY(i, yFn ? yFn(p.getZ(i)) : y);
+  geo.computeVertexNormals();
+  return new THREE.Mesh(geo, mat);
+}
+function quad(a, b, yb1, yt1, yb2, yt2, mat){
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute([a[0], yb1, a[1], b[0], yb2, b[1], b[0], yt2, b[1], a[0], yt1, a[1]], 3));
+  g.setIndex([0, 1, 2, 0, 2, 3]); g.computeVertexNormals();
+  return new THREE.Mesh(g, mat);
+}
+function wallPath(grp, pts, yb, ytFn, mat){
+  for (let i = 0; i < pts.length - 1; i++){
+    const a = pts[i], b = pts[i + 1];
+    grp.add(quad(a, b, typeof yb === "function" ? yb(a[1]) : yb, ytFn(a[1]), typeof yb === "function" ? yb(b[1]) : yb, ytFn(b[1]), mat));
+  }
+}
+function box(x0, x1, d0, d1, y0, y1, mat){
+  const m = new THREE.Mesh(new THREE.BoxGeometry(Math.abs(x1 - x0), y1 - y0, Math.abs(d1 - d0)), mat);
+  m.position.set((x0 + x1) / 2, (y0 + y1) / 2, (d0 + d1) / 2);
+  return m;
+}
+const quadPts = (p0, c, p1, n = 24) => Array.from({length: n + 1}, (_, i) => { const t = i / n; return [(1 - t) ** 2 * p0[0] + 2 * t * (1 - t) * c[0] + t * t * p1[0], (1 - t) ** 2 * p0[1] + 2 * t * (1 - t) * c[1] + t * t * p1[1]]; });
+const lerpPts = (a, b, n) => Array.from({length: n + 1}, (_, i) => [a[0] + (b[0] - a[0]) * i / n, a[1] + (b[1] - a[1]) * i / n]);
+function label(text, x, y, d, cls = "lbl3d"){
+  const div = document.createElement("div"); div.className = cls; div.textContent = text;
+  const o = new CSS2DObject(div); o.position.set(x, y, d); return o;
+}
+function dimLine(grp, a, b, text){
+  const A = new THREE.Vector3(...a), B = new THREE.Vector3(...b);
+  const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([A, B]), M.dimLine); line.renderOrder = 20; grp.add(line);
+  for (const P of [A, B]){ const s = new THREE.Mesh(new THREE.SphereGeometry(.09, 10, 8), M.dimDot); s.position.copy(P); s.renderOrder = 21; grp.add(s); }
+  const mid = A.clone().add(B).multiplyScalar(.5);
+  grp.add(label(text, mid.x, mid.y, mid.z, "dim3d"));
+}
+function screenTexture(title, sub){
+  const c = document.createElement("canvas"); c.width = 1024; c.height = 576;
+  const g = c.getContext("2d");
+  const gr = g.createLinearGradient(0, 0, 1024, 576); gr.addColorStop(0, "#7b1e3c"); gr.addColorStop(1, "#2a0d18");
+  g.fillStyle = gr; g.fillRect(0, 0, 1024, 576);
+  g.fillStyle = "#fff"; g.textAlign = "center"; g.font = "bold 64px system-ui, sans-serif"; g.fillText(title, 512, 270);
+  g.font = "36px system-ui, sans-serif"; g.globalAlpha = .85; g.fillText(sub, 512, 340);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+
+/* ---------- Butacas (instancias) ---------- */
+const COLORS = {PI: 0xb5546c, PC: 0x8e2a4a, PD: 0xb5546c, AL: 0x4f8a96, AI: 0x7aaeb7, AC: 0x2f6b77, AJ: 0x7aaeb7, AR: 0x4f8a96, FP: 0xc8942f, LU: 0x8e2a4a};
+const SEL = new THREE.Color(0xf2b705);
+function seatMeshes(seats){
+  const list = seats.filter(s => s.sec !== "SR");
+  const cushionG = new THREE.BoxGeometry(.46, .09, .44); cushionG.translate(0, .45, -.02);
+  const backG = new THREE.BoxGeometry(.46, .88, .07); backG.translate(0, .52, .2);
+  const cushion = new THREE.InstancedMesh(cushionG, new THREE.MeshStandardMaterial({color: 0xffffff, roughness: .8}), list.length);
+  const back = new THREE.InstancedMesh(backG, new THREE.MeshStandardMaterial({color: 0x9a9a9a, roughness: .8}), list.length);
+  const o = new THREE.Object3D(), col = new THREE.Color();
+  list.forEach((s, i) => {
+    o.position.set(s.x, s.y, s.d); o.rotation.set(0, s.rot, 0); o.updateMatrix();
+    cushion.setMatrixAt(i, o.matrix); back.setMatrixAt(i, o.matrix);
+    col.setHex(COLORS[s.sec]); cushion.setColorAt(i, col); back.setColorAt(i, col);
+    s.idx = i;
+  });
+  const grp = new THREE.Group(); grp.add(cushion, back);
+  seats.filter(s => s.sec === "SR").forEach(s => { const m = box(-.35, .35, -.45, .45, 0, .03, M.sr); m.position.set(s.x, s.y + .02, s.d); m.rotation.y = s.rot; grp.add(m); });
+  return {grp, cushion, back, list};
+}
+
+/* ======================================================================
+   AUDITORIO A · "Ing. Alejo Peralta"
+   Geometría: medidas anotadas (15.80 boca, 13.20 fondo, 5.60/7.60, 17.10, varas 6.00, plafón 7.50)
+   y corte A–A' (33.98 m). Conteos de butacas del plano (864).
+   ====================================================================== */
+function buildA(){
+  const root = new THREE.Group(), walls = new THREE.Group(), ceil = new THREE.Group(), labels = new THREE.Group(), dims = new THREE.Group(), beam = new THREE.Group();
+  const C = [0, -5.5], W = .53, RW = 39, sw = .5;
+  const pol = (R, t) => [C[0] + R * Math.sin(t), C[1] + R * Math.cos(t)];
+  const arc = (R, t1, t2, n = 48) => Array.from({length: n + 1}, (_, i) => pol(R, t1 + (t2 - t1) * i / n));
+  const sectorPts = (R1, R2, t1, t2, n = 48) => [...arc(R1, t1, t2, n), ...arc(R2, t2, t1, n)];
+  const R0 = (9.7 + 5.5) / Math.cos(W);
+  const ST = .3; // altura del piso del escenario
+  const ceilY = d => d <= 13.2 ? ST + 7.5 : Math.min(10.4, ST + 7.5 + (d - 13.2) / 18.8 * 2.3);
+
+  /* --- butacas --- */
+  const seats = [];
+  const range = (n, fn) => Array.from({length: n}, (_, j) => fn(j));
+  const side = (n, start, R, s) => range(n, j => s * (start + (j + .5) * sw / R));
+  const mid = (n, R) => range(n, j => (j - (n - 1) / 2) * sw / R);
+  const NAMES = {PI: "Platea izquierda", PC: "Platea central", PD: "Platea derecha", AL: "Anfiteatro lateral izq.", AI: "Anfiteatro interior izq.", AC: "Anfiteatro central", AJ: "Anfiteatro interior der.", AR: "Anfiteatro lateral der.", FP: "Fila posterior", SR: "Silla de ruedas"};
+  function pushRow(row, R, y, list){
+    list.sort((a, b) => a.t - b.t); let n = 0, sr = 0;
+    for (const s of list){
+      const [x, d] = pol(R, s.t);
+      const o = {row, sec: s.sec, x, d, y, rot: s.t, secName: NAMES[s.sec]};
+      if (s.sec === "SR"){ o.id = "SR" + (++sr); o.name = "Silla de ruedas " + sr; }
+      else { n++; o.id = (row === "Post" ? "POST" : row) + n; o.name = row === "Post" ? "Posterior " + n : row + n; }
+      seats.push(o);
+    }
+  }
+  const low = {L: [10,11,11,12,12,13,13,14], C: [12,13,13,14,15,16,16,16], R: [7,11,11,12,12,13,14,14]};
+  const lowR = i => 20 + i * .95, lowY = i => i * .28;
+  [..."ABCDEFGH"].forEach((row, i) => {
+    const R = lowR(i), list = [];
+    side(low.L[i], .21, R, -1).forEach(t => list.push({sec: "PI", t}));
+    mid(low.C[i], R).forEach(t => list.push({sec: "PC", t}));
+    side(low.R[i], .21, R, 1).forEach(t => list.push({sec: "PD", t}));
+    if (row === "A") for (let k = 0; k < 3; k++) list.push({sec: "SR", t: .21 + (7 * sw + (k + .5) * .75) / R});
+    pushRow(row, R, lowY(i), list);
+  });
+  const up = {AL: [9,11,11,12,12,12,12,12,12,13,13], AI: [0,0,0,7,7,7,8,8,8,9,9], AC: [0,0,9,11,12,13,13,14,14,15,16], AJ: [0,0,0,7,7,7,8,8,9,9,9], AR: [9,11,12,12,12,12,12,12,12,13,13]};
+  const upR = k => 28.6 + k * .9, upY = k => 2.75 + k * .45;
+  [..."IJKLMNÑOPQR"].forEach((row, k) => {
+    const R = upR(k), list = [];
+    side(up.AL[k], .295, R, -1).forEach(t => list.push({sec: "AL", t}));
+    side(up.AI[k], .14, R, -1).forEach(t => list.push({sec: "AI", t}));
+    mid(up.AC[k], R).forEach(t => list.push({sec: "AC", t}));
+    side(up.AJ[k], .14, R, 1).forEach(t => list.push({sec: "AJ", t}));
+    side(up.AR[k], .295, R, 1).forEach(t => list.push({sec: "AR", t}));
+    pushRow(row, R, upY(k), list);
+  });
+  { const list = []; side(28, .14, 38.45, -1).forEach(t => list.push({sec: "FP", t})); side(28, .14, 38.45, 1).forEach(t => list.push({sec: "FP", t})); pushRow("Post", 38.45, 7.7, list); }
+
+  /* --- pisos, escenario y gradas --- */
+  const cyc = quadPts([-8, 1.2], [0, -1.2], [8, 1.2]);
+  const houseOutline = [...cyc, [8, 8], pol(R0, W), ...arc(RW, W, -W, 60), pol(R0, -W), [-8, 8]];
+  root.add(prism(houseOutline, -.06, 0, M.floor));
+  root.add(prism([...cyc, [8, 9.7], [7.9, 9.7], ...quadPts([7.9, 9.7], [0, 16.7], [-7.9, 9.7]), [-8, 9.7]], 0, ST, M.stage));
+  for (let i = 1; i < 8; i++) root.add(prism(sectorPts(lowR(i) - .475, lowR(i) + .475, -W, W), 0, lowY(i), M.tier));
+  root.add(prism(sectorPts(27.125, 28.15, -W, W), 0, 2.3, M.landing));
+  // Accesos: puertas del escenario (muros diagonales) y extremos del pasillo / descanso
+  [1, -1].forEach(s => {
+    const a = [s * 8.12, 8.23], b = [s * 8.78, 9.47];
+    root.add(quad(a, b, ST, ST + 2.4, ST, ST + 2.4, M.door));
+    labels.add(label("Acceso escenario", s * 9.6, ST + 3, 8.9));
+    root.add(quad(pol(27.2, s * (W - .003)), pol(28.1, s * (W - .003)), 2.3, 4.6, 2.3, 4.6, M.door));
+    const [x, d] = pol(27.65, s * W); labels.add(label("Acceso", x + s * 1.2, 5.2, d));
+  });
+  // Nivel superior por zonas: [ángulo inicial, ángulo final, primera fila con butacas]
+  // Centro: la fila K es la primera → descanso plano entre H y K. Zonas interiores: acceso público (escalera que baja) en I–K.
+  const LAND = 2.3;
+  [[-W, -.262, 0], [-.262, -.14, 3], [-.14, .14, 2], [.14, .262, 3], [.262, W, 0]].forEach(([t1, t2, k0]) => {
+    for (let k = k0; k < 11; k++) root.add(prism(sectorPts(upR(k) - .45, upR(k) + .45, t1, t2, 16), 0, upY(k), M.tier));
+    if (k0 === 2) root.add(prism(sectorPts(28.15, upR(k0) - .45, t1, t2, 16), 0, LAND, M.landing));
+    if (k0 === 3){
+      const R1 = 28.15, R2 = upR(3) - .45, n = 6;
+      for (let j = 0; j < n; j++) root.add(prism(sectorPts(R1 + (R2 - R1) * j / n, R1 + (R2 - R1) * (j + 1) / n, t1, t2, 8), 0, LAND - (j + 1) * (LAND - .3) / n, M.landing));
+      [t1, t2].forEach(t => walls.add(quad(pol(R1, t), pol(R2, t), 0, LAND + 1, 0, upY(3), M.solid)));
+      root.add(quad(pol(R2 - .01, t1 + .01), pol(R2 - .01, t2 - .01), .3, 2.5, .3, 2.5, M.door));
+      const [lx, ld] = pol(29.5, (t1 + t2) / 2);
+      labels.add(label("Acceso público ↓", lx, LAND + 1.2, ld));
+    }
+  });
+  root.add(prism(sectorPts(38.05, RW, -W, W), 0, 7.7, M.tier));
+  [1, -1].forEach(s => { for (let j = 0; j < 4; j++) root.add(box(s * 3.05, s * 4.15, 12.45 + j * .3, 12.75 + j * .3, 0, ST * (4 - j) / 4, M.tier)); });
+
+  /* --- escenario: pantalla, ciclorama, piernas, varas --- */
+  const scr = new THREE.Mesh(new THREE.PlaneGeometry(10, 5.6), new THREE.MeshBasicMaterial({map: screenTexture("Auditorio A", "Pantalla 10.00 m"), side: THREE.DoubleSide}));
+  scr.position.set(0, ST + .4 + 2.8, 5.6); root.add(scr);
+  const cycCloth = quadPts([-7.4, 1.0], [0, -.95], [7.4, 1.0], 20);
+  wallPath(root, cycCloth, ST, () => ST + 4, M.cyc);
+  [2.6, 4.4].forEach(d => [1, -1].forEach(s => root.add(quad([s * 5.8, d], [s * 7.95, d], ST, 7, ST, 7, M.black))));
+  [1.0, 3.0, 5.0, 7.2, 8.8].forEach(d => { const v = new THREE.Mesh(new THREE.CylinderGeometry(.03, .03, 14.4, 6), M.metal); v.rotation.z = Math.PI / 2; v.position.set(0, ST + 6, d); root.add(v); });
+
+  /* --- muros --- */
+  const wallTop = () => ST + 10.3;
+  wallPath(walls, [[-8, 1.2], ...cyc.slice(1)], 0, wallTop, M.wall);
+  [1, -1].forEach(s => {
+    wallPath(walls, [[s * 8, 1.2], [s * 8, 8], pol(R0, s * W)], 0, wallTop, M.wall);
+    wallPath(walls, lerpPts(pol(R0, s * W), pol(RW, s * W), 8), 0, d => ceilY(d), M.wall);
+    walls.add(quad([s * 7.9, 9.7], [s * R0 * Math.sin(W), 9.7], 0, ceilY(9.7), 0, ceilY(9.7), M.wall));
+  });
+  walls.add(quad([-R0 * Math.sin(W), 9.7], [R0 * Math.sin(W), 9.7], ceilY(9.7), wallTop(), ceilY(9.7), wallTop(), M.wall));
+  wallPath(walls, arc(RW, -W, W, 40), 0, () => 10.4, M.wall);
+  /* --- cabina y proyector --- */
+  root.add(prism(sectorPts(38.05, 38.95, -.12, .12, 8), 7.7, 10.2, M.glass));
+  const pj = box(-.35, .35, 32.75, 33.3, 8.25, 8.6, M.proj); root.add(pj);
+  /* --- techo --- */
+  const houseCeil = [pol(R0, W), ...lerpPts(pol(R0, W), pol(RW, W), 10).slice(1), ...arc(RW, W, -W, 40).slice(1), ...lerpPts(pol(RW, -W), pol(R0, -W), 10).slice(1)];
+  ceil.add(flat(houseCeil, 0, M.ceil, d => ceilY(d)));
+  ceil.add(flat([...cyc, [8, 8], [R0 * Math.sin(W), 9.7], [-R0 * Math.sin(W), 9.7], [-8, 8]], wallTop(), M.ceil));
+  /* --- haz del proyector (cabina → pantalla) --- */
+  const apex = [0, 8.42, 32.75], sy0 = ST + .4, sy1 = sy0 + 5.6;
+  const corners = [[-5, sy0, 5.62], [5, sy0, 5.62], [5, sy1, 5.62], [-5, sy1, 5.62]];
+  const bg = new THREE.BufferGeometry();
+  bg.setAttribute("position", new THREE.Float32BufferAttribute([...apex, ...corners.flat()], 3));
+  bg.setIndex([0, 1, 2, 0, 2, 3, 0, 3, 4, 0, 4, 1]);
+  beam.add(new THREE.Mesh(bg, M.beam));
+  /* --- etiquetas --- */
+  labels.add(label("Escenario", 0, 1.4, 9.5), label("Pantalla", 0, sy1 + .5, 5.6), label("Ciclorama", 0, ST + 4.4, .2),
+    label("Cabina de control", 0, 10.8, 33.4), label("Nivel inferior · 305", -7, 2.6, 17), label("Nivel superior · 559", -10, 9, 32));
+  /* --- cotas --- */
+  dimLine(dims, [-7.9, ST + .05, 9.75], [7.9, ST + .05, 9.75], "15.80 boca de escena");
+  dimLine(dims, [-2.2, ST + .05, 0], [-2.2, ST + .05, 13.2], "13.20");
+  dimLine(dims, [-5, sy1 + .25, 5.6], [5, sy1 + .25, 5.6], "10.00 pantalla");
+  dimLine(dims, [1.2, 3.4, 5.6], [1.2, 3.4, 22.7], "17.10");
+  dimLine(dims, [-7.3, ST, 1.0], [-7.3, ST + 6, 1.0], "6.00 a varas");
+  dimLine(dims, [-8.2, ST, 10.6], [-8.2, ST + 7.5, 10.6], "7.50 a plafón");
+  dimLine(dims, [9.5, .05, 0], [9.5, .05, 33.5], "≈ 33.98 total (corte)");
+
+  const sm = seatMeshes(seats);
+  root.add(sm.grp, walls, ceil, labels, dims, beam);
+  const stageLook = new THREE.Vector3(0, ST + 2.6, 5.6);
+  return {
+    key: "A", title: "Auditorio A · “Ing. Alejo Peralta”", root, walls, ceil, labels, dims, beam, seats, sm, stageLook,
+    cams: {
+      general: [[-28, 42, 56], [0, 1, 15]],
+      escenario: [[0, ST + 1.7, 7.5], [0, 5, 30]],
+      cabina: [[0, 9.4, 33.6], [0, 2.5, 6]],
+      arriba: [[0, 70, 17.5], [0, 0, 17.4]]
+    },
+    legend: [["PI", "Platea izq. / der."], ["PC", "Platea central"], ["AL", "Anfiteatro lateral"], ["AI", "Anfiteatro interior"], ["AC", "Anfiteatro central"], ["FP", "Fila posterior"], ["SR", "Silla de ruedas"]],
+    about: `<p class="note" style="margin-top:0"><b>864 butacas</b> (305 abajo, 559 arriba) colocadas fila por fila con los conteos del plano.</p>
+      <ul class="note"><li>Medidas usadas: boca de escena 15.80, ciclorama → foro 13.20 (5.60 + 7.60), pantalla 10 m, pantalla → nivel superior 17.10, varas a 6.00 y plafón a 7.50 m, largo total ≈ 33.98 m.</li>
+      <li>Esquemático: el ángulo del abanico, la altura de cada escalón y la forma del techo se interpretaron del corte; no son medidas de obra.</li></ul>`
+  };
+}
+
+/* ======================================================================
+   AUDITORIO B · "Ing. Manuel Moreno Torres"
+   Niveles del corte (+3.30 losa, +2.80 plafón, +0.90 cabina, ±0.00 acceso, −0.30 escenario, −1.40 sala).
+   Medidas horizontales escaladas del plano 1:100 (≈).
+   ====================================================================== */
+function buildB(){
+  const root = new THREE.Group(), walls = new THREE.Group(), ceil = new THREE.Group(), labels = new THREE.Group(), dims = new THREE.Group(), beam = new THREE.Group();
+  const k = .0342, bx = px => (845 - px) * k, bd = py => (py - 172) * k;
+  const X = 7.42, D = bd(812), Y = lv => lv + 1.4;   // y = 0 en el piso más bajo de la sala (−1.40)
+  const ST = Y(-.3), ENT = Y(0), CAB = Y(.9), PLA = Y(2.8), LOSA = Y(3.3);
+  const rowD0 = i => 6.0 + i * .869, rowY = i => i * .1;
+
+  const seats = [], pitch = 327 / 22;
+  [..."ABCDEFGHIJKLMN"].forEach((row, i) => {
+    const d = bd(360 + i * 25.4), n = (row === "D" || row === "E") ? 20 : 22;
+    for (let j = 0; j < n; j++){
+      const px = 846.5 + (j - (n - 1) / 2) * pitch, num = n - j;
+      seats.push({row, sec: "LU", id: row + num, name: row + num, secName: "Luneta", x: bx(px), d, y: rowY(i), rot: 0});
+    }
+  });
+
+  root.add(prism([[-X, 0], [X, 0], [X, D], [-X, D]], -.06, 0, M.floor));
+  for (let i = 1; i < 14; i++) root.add(prism([[-X, rowD0(i)], [X, rowD0(i)], [X, rowD0(i + 1)], [-X, rowD0(i + 1)]], 0, rowY(i), M.tier));
+  root.add(prism([[-X, rowD0(14)], [X, rowD0(14)], [X, D], [-X, D]], 0, ENT, M.tier));
+  root.add(prism([[bx(632), 0], [bx(632), bd(262)], ...quadPts([bx(632), bd(262)], [0, bd(362)], [bx(1058), bd(262)]), [bx(1058), 0]], 0, ST, M.stage));
+  [[bx(667), bx(632)], [bx(1060), bx(1025)]].forEach(([x0, x1]) => { for (let j = 0; j < 4; j++) root.add(box(x0, x1, bd(277) + j * .24, bd(277) + (j + 1) * .24, 0, ST * (4 - j) / 4, M.tier)); });
+  // camerinos (lado izquierdo visto desde la sala)
+  const CX0 = -bx(628), CX1 = -bx(742);
+  root.add(prism([[CX1, bd(92)], [CX0, bd(92)], [CX0, 0], [CX1, 0]], 0, ST, M.stage));
+  // accesos de la sala (fachada) y escaleras laterales del escenario
+  [1, -1].forEach(s => {
+    root.add(quad([s * 5.85, D - .01], [s * 7.25, D - .01], ENT, ENT + 2.3, ENT, ENT + 2.3, M.door));
+    labels.add(label("Acceso", s * 6.55, ENT + 2.8, D));
+  });
+  // pilares
+  for (const xs of [[bx(682), bx(668)], [bx(1026), bx(1012)]]) for (const ds of [[bd(434), bd(447)], [bd(703), bd(716)]]) root.add(box(xs[0], xs[1], ds[0], ds[1], 0, LOSA, M.solid));
+  // bloque posterior: sanitarios y cabina
+  root.add(box(bx(782), bx(678), bd(733), D, ENT, PLA, M.solid));
+  root.add(box(bx(1014), bx(912), bd(733), D, ENT, PLA, M.solid));
+  root.add(box(bx(912), bx(782), bd(717), D, ENT, CAB, M.solid));
+  root.add(box(bx(912), bx(782), bd(717), D, CAB, PLA, M.glass));
+  // proyector al techo, al centro
+  const PJ = [0, PLA - .3, 11.0];
+  root.add(box(-.35, .35, 10.75, 11.25, PLA - .45, PLA - .15, M.proj));
+  root.add(box(-.03, .03, 10.97, 11.03, PLA - .15, PLA, M.metal));
+  // muros
+  const top = () => LOSA;
+  wallPath(walls, [[-X, 0], [-X, D], [X, D], [X, 0], [-X, 0]], 0, top, M.wall);
+  wallPath(walls, [[CX1, 0], [CX1, bd(92)], [CX0, bd(92)], [CX0, 0]], ST, top, M.wall);
+  // techo
+  ceil.add(flat([[-X, 5.09], [X, 5.09], [X, 18.5], [-X, 18.5]], PLA, M.ceil));
+  ceil.add(flat([[-X, 0], [X, 0], [X, 5.09], [-X, 5.09]], LOSA, M.ceil));
+  ceil.add(flat([[-X, 18.5], [X, 18.5], [X, D], [-X, D]], LOSA, M.ceil));
+  // haz: proyector → muro del fondo del escenario (imagen 6.0 m, 16:9)
+  const iw = 6, ih = iw * 9 / 16, y0 = ST + .05;
+  const corners = [[-iw / 2, y0, .03], [iw / 2, y0, .03], [iw / 2, y0 + ih, .03], [-iw / 2, y0 + ih, .03]];
+  const bg = new THREE.BufferGeometry();
+  bg.setAttribute("position", new THREE.Float32BufferAttribute([...PJ, ...corners.flat()], 3));
+  bg.setIndex([0, 1, 2, 0, 2, 3, 0, 3, 4, 0, 4, 1]);
+  beam.add(new THREE.Mesh(bg, M.beam));
+  const img = new THREE.Mesh(new THREE.PlaneGeometry(iw, ih), new THREE.MeshBasicMaterial({map: screenTexture("Auditorio B", "Proyección 6.0 m"), side: THREE.DoubleSide}));
+  img.position.set(0, y0 + ih / 2, .04); beam.add(img);
+  // etiquetas
+  labels.add(label("Escenario", 0, ST + 1.2, 2.4), label("Cabina de control", 0, PLA + .5, 20.2), label("Camerinos", (CX0 + CX1) / 2, ST + 1.4, -1.4),
+    label("Sanitarios H", 3.9, PLA + .5, 20.6), label("Sanitarios M", -4.0, PLA + .5, 20.6), label("Proyector", 0, PLA + .35, 11));
+  // cotas
+  dimLine(dims, [-7.0, 0, 6.2], [-7.0, PLA, 6.2], "4.20 libre");
+  dimLine(dims, [6.6, ST, 1.0], [6.6, LOSA, 1.0], "3.60 libre");
+  dimLine(dims, [-X, LOSA + .2, D], [X, LOSA + .2, D], "≈ 14.84");
+  dimLine(dims, [-X - .3, .05, 0], [-X - .3, .05, D], "≈ 21.89");
+  dimLine(dims, [-5.59, rowY(0) + .05, 5.75], [5.59, rowY(0) + .05, 5.75], "≈ 11.18 (22 butacas)");
+
+  const sm = seatMeshes(seats);
+  root.add(sm.grp, walls, ceil, labels, dims, beam);
+  return {
+    key: "B", title: "Auditorio B · “Ing. Manuel Moreno Torres”", root, walls, ceil, labels, dims, beam, seats, sm,
+    stageLook: new THREE.Vector3(0, ST + 1.3, 1.0),
+    cams: {
+      general: [[-15, 19, 30], [0, .8, 9]],
+      escenario: [[0, ST + 1.65, 3.2], [0, 1.2, 20]],
+      cabina: [[0, CAB + 1.2, 20.0], [0, 1.2, 2]],
+      arriba: [[0, 40, 9.6], [0, 0, 9.55]]
+    },
+    legend: [["LU", "Luneta (filas A–N)"]],
+    about: `<p class="note" style="margin-top:0"><b>304 butacas</b> en 14 filas (A–N), con la numeración del plano.</p>
+      <ul class="note"><li>Alturas tomadas de los niveles del corte: sala −1.40 a ±0.00, escenario −0.30, cabina +0.90, plafón +2.80, losa +3.30.</li>
+      <li>Medidas horizontales <b>estimadas</b> a escala del plano (≈ 14.8 × 21.9 m). Un video del recorrido serviría para confirmarlas.</li></ul>`
+  };
+}
+
+/* ---------- Estado y cambio de auditorio ---------- */
+let cur = null, selected = null, seatMode = false, anim = null;
+const cache = {};
+function disposeLabels(obj){ obj.traverse(o => { if (o.isCSS2DObject && o.element.parentNode) o.element.parentNode.removeChild(o.element); }); }
+function setVisible(grp, v){ grp.visible = v; grp.traverse(o => { if (o.isCSS2DObject) o.visible = v; }); }
+function applyToggles(){
+  if (!cur) return;
+  setVisible(cur.walls, $("#tWalls").checked);
+  setVisible(cur.ceil, $("#tCeil").checked);
+  setVisible(cur.labels, $("#tLabels").checked);
+  setVisible(cur.dims, $("#tDims").checked);
+  setVisible(cur.beam, $("#tBeam").checked);
+}
+function show(key){
+  if (cur){ scene.remove(cur.root); disposeLabels(cur.root); clearSel(); }
+  cur = cache[key] || (cache[key] = key === "A" ? buildA() : buildB());
+  scene.add(cur.root);
+  applyToggles();
+  document.querySelectorAll("[data-aud]").forEach(b => b.setAttribute("aria-pressed", b.dataset.aud === key ? "true" : "false"));
+  $("#hudAud").textContent = cur.title;
+  $("#seatQ").placeholder = key === "A" ? "ej. H12, Ñ4, Post 10" : "ej. C15";
+  $("#seatMsg").textContent = "";
+  $("#legend").innerHTML = cur.legend.map(([k, n]) => `<div><i style="background:#${(k === "SR" ? 0x2f62c9 : COLORS[k]).toString(16).padStart(6, "0")}"></i>${n}</div>`).join("");
+  $("#about").innerHTML = cur.about;
+  exitSeat(false);
+  setCam("general", false);
+  try { history.replaceState(null, "", "#" + key); } catch (e) {}
+}
+
+/* ---------- Cámara ---------- */
+function flyTo(pos, target, ms = 900){
+  if (!ms){ camera.position.copy(pos); controls.target.copy(target); controls.update(); return; }
+  anim = {p0: camera.position.clone(), t0: controls.target.clone(), p1: pos.clone(), t1: target.clone(), start: performance.now(), ms};
+}
+function setCam(name, animate = true){
+  exitSeat(false);
+  const [p, t] = cur.cams[name];
+  const pos = new THREE.Vector3(...p), target = new THREE.Vector3(...t);
+  if (name === "general" || name === "arriba"){
+    // En pantallas angostas (celular) alejamos la cámara para que quepa todo el auditorio
+    const k = Math.max(1, .9 / camera.aspect);
+    pos.sub(target).multiplyScalar(k).add(target);
+  }
+  flyTo(pos, target, animate ? 900 : 0);
+  document.querySelectorAll("[data-cam]").forEach(b => b.classList.toggle("on", b.dataset.cam === name));
+}
+function viewFromSeat(s){
+  const eye = new THREE.Vector3(s.x, s.y + 1.15, s.d + .05);
+  const dir = cur.stageLook.clone().sub(eye).normalize();
+  seatMode = true;
+  controls.enableZoom = false; controls.enablePan = false; controls.rotateSpeed = .35; controls.maxPolarAngle = Math.PI * .85;
+  flyTo(eye, eye.clone().add(dir.multiplyScalar(.6)), 1100);
+  $("#seatbarTxt").textContent = `Vista desde ${s.name} · ${s.secName}`;
+  $("#seatbar").hidden = false;
+  document.querySelectorAll("[data-cam]").forEach(b => b.classList.remove("on"));
+}
+function exitSeat(goGeneral){
+  if (seatMode){
+    seatMode = false;
+    controls.enableZoom = true; controls.enablePan = true; controls.rotateSpeed = 1; controls.maxPolarAngle = Math.PI * .495;
+  }
+  $("#seatbar").hidden = true;
+  if (goGeneral) setCam("general");
+}
+
+/* ---------- Selección de butacas ---------- */
+function clearSel(){
+  if (!selected || !cur) return;
+  const c = new THREE.Color(COLORS[selected.sec]);
+  cur.sm.cushion.setColorAt(selected.idx, c); cur.sm.back.setColorAt(selected.idx, c);
+  cur.sm.cushion.instanceColor.needsUpdate = cur.sm.back.instanceColor.needsUpdate = true;
+  selected = null;
+}
+function selectSeat(s){
+  clearSel();
+  if (!s || s.sec === "SR") return;
+  selected = s;
+  cur.sm.cushion.setColorAt(s.idx, SEL); cur.sm.back.setColorAt(s.idx, SEL);
+  cur.sm.cushion.instanceColor.needsUpdate = cur.sm.back.instanceColor.needsUpdate = true;
+  if (!seatMode){
+    $("#seatbarTxt").textContent = `${s.name} · ${s.secName}`;
+    $("#seatbar").hidden = false;
+    $("#exitSeat").textContent = "Ver desde aquí";
+    $("#exitSeat").onclick = () => { $("#exitSeat").textContent = "Salir de la butaca"; $("#exitSeat").onclick = () => exitSeat(true); viewFromSeat(s); };
+  }
+}
+$("#exitSeat").onclick = () => exitSeat(true);
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+let down = null;
+renderer.domElement.addEventListener("pointerdown", e => { down = {x: e.clientX, y: e.clientY}; });
+renderer.domElement.addEventListener("pointerup", e => {
+  if (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 6 || seatMode) { down = null; return; }
+  down = null;
+  const r = renderer.domElement.getBoundingClientRect();
+  ndc.set((e.clientX - r.left) / r.width * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(ndc, camera);
+  const hit = ray.intersectObjects([cur.sm.cushion, cur.sm.back], false)[0];
+  if (hit && hit.instanceId != null){ selectSeat(cur.sm.list[hit.instanceId]); }
+  else { clearSel(); $("#seatbar").hidden = true; }
+});
+$("#seatForm").addEventListener("submit", e => {
+  e.preventDefault();
+  let q = $("#seatQ").value.toUpperCase().replace(/[\s\-.]/g, "").replace(/^POSTERIOR/, "POST").replace(/^FILA/, "");
+  const s = cur.seats.find(x => x.id === q && x.sec !== "SR");
+  if (!s){ $("#seatMsg").textContent = q ? `No encontré «${$("#seatQ").value.trim()}» en este auditorio.` : ""; return; }
+  $("#seatMsg").textContent = "";
+  selectSeat(s);
+  $("#exitSeat").textContent = "Salir de la butaca"; $("#exitSeat").onclick = () => exitSeat(true);
+  viewFromSeat(s);
+});
+
+/* ---------- Controles de interfaz ---------- */
+document.querySelectorAll("[data-aud]").forEach(b => b.addEventListener("click", () => { if (cur.key !== b.dataset.aud) show(b.dataset.aud); }));
+document.querySelectorAll("[data-cam]").forEach(b => b.addEventListener("click", () => setCam(b.dataset.cam)));
+["#tWalls", "#tCeil", "#tLabels", "#tDims", "#tBeam"].forEach(id => $(id).addEventListener("change", applyToggles));
+
+/* ---------- Bucle ---------- */
+function ease(k){ return k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2; }
+renderer.setAnimationLoop(now => {
+  if (anim){
+    const k = Math.min(1, (now - anim.start) / anim.ms), e = ease(k);
+    camera.position.lerpVectors(anim.p0, anim.p1, e);
+    controls.target.lerpVectors(anim.t0, anim.t1, e);
+    if (k >= 1) anim = null;
+  }
+  controls.update();
+  renderer.render(scene, camera);
+  labelR.render(scene, camera);
+});
+
+if (/[?&]embed=1/.test(location.search)) document.documentElement.classList.add("embed");
+window.addEventListener("hashchange", () => { const k = /^#B/i.test(location.hash) ? "B" : "A"; if (cur && cur.key !== k) show(k); });
+resize();
+show(/^#B/i.test(location.hash) ? "B" : "A");
+$("#loading").remove();
+</script>
+<noscript><p style="padding:16px">Esta página necesita JavaScript y conexión a internet (carga three.js).</p></noscript>
+</body>
+</html>

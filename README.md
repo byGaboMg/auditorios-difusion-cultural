@@ -7,6 +7,7 @@ Página estática (un solo `index.html`, sin base de datos) con el plano interac
 - **Técnica:** cotas, corte longitudinal, niveles y equipo.
 - **Audio / Iluminación:** ubicación de cada equipo según los planos de sistemas.
 - **Video:** posición del proyector y área de proyección, con distancia y relación de tiro.
+- **3D:** modelo three.js (`modelo-3d.html`) generado a partir de los planos, con vista desde cualquier butaca.
 
 Para verla localmente basta con abrir `index.html` en el navegador.
 
