@@ -149,6 +149,7 @@ ul.note li{margin:3px 0}
         <label><input type="checkbox" id="tLabels" checked> Etiquetas</label>
         <label><input type="checkbox" id="tDims"> Cotas</label>
         <label><input type="checkbox" id="tBeam"> Haz del proyector</label>
+        <label id="tScreenRow"><input type="checkbox" id="tScreen" checked> Pantalla</label>
       </div>
     </section>
 
@@ -327,14 +328,15 @@ function buildA(){
       seats.push(o);
     }
   }
-  const low = {L: [10,11,11,12,12,13,13,14], C: [12,13,13,14,15,16,16,16], R: [7,11,11,12,12,13,14,14]};
+  // Los 3 lugares para silla de ruedas quedan del lado izquierdo (visto desde la sala); ese bloque tiene 7 butacas en la fila A
+  const low = {L: [7,11,11,12,12,13,14,14], C: [12,13,13,14,15,16,16,16], R: [10,11,11,12,12,13,13,14]};
   const lowR = i => 20 + i * .95, lowY = i => i * .28;
   [..."ABCDEFGH"].forEach((row, i) => {
     const R = lowR(i), list = [];
     side(low.L[i], .21, R, -1).forEach(t => list.push({sec: "PI", t}));
     mid(low.C[i], R).forEach(t => list.push({sec: "PC", t}));
     side(low.R[i], .21, R, 1).forEach(t => list.push({sec: "PD", t}));
-    if (row === "A") for (let k = 0; k < 3; k++) list.push({sec: "SR", t: .21 + (7 * sw + (k + .5) * .75) / R});
+    if (row === "A") for (let k = 0; k < 3; k++) list.push({sec: "SR", t: -(.21 + (7 * sw + (k + .5) * .75) / R)});
     pushRow(row, R, lowY(i), list);
   });
   const up = {AL: [9,11,11,12,12,12,12,12,12,13,13], AI: [0,0,0,7,7,7,8,8,8,9,9], AC: [0,0,9,11,12,13,13,14,14,15,16], AJ: [0,0,0,7,7,7,8,8,9,9,9], AR: [9,11,12,12,12,12,12,12,12,13,13]};
@@ -385,7 +387,8 @@ function buildA(){
 
   /* --- escenario: pantalla, ciclorama, piernas, varas --- */
   const scr = new THREE.Mesh(new THREE.PlaneGeometry(10, 5.6), new THREE.MeshBasicMaterial({map: screenTexture("Auditorio A", "Pantalla 10.00 m"), side: THREE.DoubleSide}));
-  scr.position.set(0, ST + .4 + 2.8, 5.6); root.add(scr);
+  scr.position.set(0, ST + .4 + 2.8, 5.6);
+  const screen = new THREE.Group(); screen.add(scr); root.add(screen);
   const cycCloth = quadPts([-7.4, 1.0], [0, -.95], [7.4, 1.0], 20);
   wallPath(root, cycCloth, ST, () => ST + 4, M.cyc);
   [2.6, 4.4].forEach(d => [1, -1].forEach(s => root.add(quad([s * 5.8, d], [s * 7.95, d], ST, 7, ST, 7, M.black))));
@@ -416,7 +419,8 @@ function buildA(){
   bg.setIndex([0, 1, 2, 0, 2, 3, 0, 3, 4, 0, 4, 1]);
   beam.add(new THREE.Mesh(bg, M.beam));
   /* --- etiquetas --- */
-  labels.add(label("Escenario", 0, 1.4, 9.5), label("Pantalla", 0, sy1 + .5, 5.6), label("Ciclorama", 0, ST + 4.4, .2),
+  screen.add(label("Pantalla", 0, sy1 + .5, 5.6));
+  labels.add(label("Escenario", 0, 1.4, 9.5), label("Ciclorama", 0, ST + 4.4, .2),
     label("Cabina de control", 0, 10.8, 33.4), label("Nivel inferior · 305", -7, 2.6, 17), label("Nivel superior · 559", -10, 9, 32));
   /* --- cotas --- */
   dimLine(dims, [-7.9, ST + .05, 9.75], [7.9, ST + .05, 9.75], "15.80 boca de escena");
@@ -431,7 +435,7 @@ function buildA(){
   root.add(sm.grp, walls, ceil, labels, dims, beam);
   const stageLook = new THREE.Vector3(0, ST + 2.6, 5.6);
   return {
-    key: "A", title: "Auditorio A · “Ing. Alejo Peralta”", root, walls, ceil, labels, dims, beam, seats, sm, stageLook,
+    key: "A", title: "Auditorio A · “Ing. Alejo Peralta”", root, walls, ceil, labels, dims, beam, screen, seats, sm, stageLook,
     cams: {
       general: [[-28, 42, 56], [0, 1, 15]],
       escenario: [[0, ST + 1.7, 7.5], [0, 5, 30]],
@@ -520,7 +524,7 @@ function buildB(){
   const sm = seatMeshes(seats);
   root.add(sm.grp, walls, ceil, labels, dims, beam);
   return {
-    key: "B", title: "Auditorio B · “Ing. Manuel Moreno Torres”", root, walls, ceil, labels, dims, beam, seats, sm,
+    key: "B", title: "Auditorio B · “Ing. Manuel Moreno Torres”", root, walls, ceil, labels, dims, beam, screen: null, seats, sm,
     stageLook: new THREE.Vector3(0, ST + 1.3, 1.0),
     cams: {
       general: [[-15, 19, 30], [0, .8, 9]],
@@ -547,6 +551,11 @@ function applyToggles(){
   setVisible(cur.labels, $("#tLabels").checked);
   setVisible(cur.dims, $("#tDims").checked);
   setVisible(cur.beam, $("#tBeam").checked);
+  if (cur.screen){
+    setVisible(cur.screen, $("#tScreen").checked);
+    cur.screen.traverse(o => { if (o.isCSS2DObject) o.visible = $("#tScreen").checked && $("#tLabels").checked; });
+  }
+  $("#tScreenRow").hidden = !cur.screen;
 }
 function show(key){
   if (cur){ scene.remove(cur.root); disposeLabels(cur.root); clearSel(); }
@@ -649,7 +658,7 @@ $("#seatForm").addEventListener("submit", e => {
 /* ---------- Controles de interfaz ---------- */
 document.querySelectorAll("[data-aud]").forEach(b => b.addEventListener("click", () => { if (cur.key !== b.dataset.aud) show(b.dataset.aud); }));
 document.querySelectorAll("[data-cam]").forEach(b => b.addEventListener("click", () => setCam(b.dataset.cam)));
-["#tWalls", "#tCeil", "#tLabels", "#tDims", "#tBeam"].forEach(id => $(id).addEventListener("change", applyToggles));
+["#tWalls", "#tCeil", "#tLabels", "#tDims", "#tBeam", "#tScreen"].forEach(id => $(id).addEventListener("change", applyToggles));
 
 /* ---------- Bucle ---------- */
 function ease(k){ return k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2; }

@@ -715,7 +715,7 @@ function buildB(){
   const sections = [{k: "LU", name: "Luneta (filas A–N)", level: "Única"}];
   const X = 7.42, D = bd(812);
   function drawBase(g){
-    el("rect", {class: "house", x: f(-bx(628)), y: 0, width: f(bx(628) - bx(742)), height: f(-bd(92))}, g);
+    el("rect", {class: "house", x: f(bx(742)), y: 0, width: f(bx(628) - bx(742)), height: f(-bd(92))}, g);
     el("rect", {class: "house", x: -X, y: f(-D), width: f(2 * X), height: f(D)}, g);
     el("path", {class: "stage", d: `M${P(bx(632), 0)}L${P(bx(632), bd(262))}Q${P(0, bd(362))} ${P(bx(1058), bd(262))}L${P(bx(1058), 0)}Z`}, g);
     stairs(g, bx(632), bx(667), bd(277), bd(305), 4);
@@ -732,7 +732,7 @@ function buildB(){
   }
   function drawLabels(g){
     txt(g, 0, 1.9, "ESCENARIO", .8, "lbl normal-only");
-    txt(g, -(bx(742) + bx(628)) / 2, -1.5, "CAMERINOS", .42, "lbl-s");
+    txt(g, (bx(742) + bx(628)) / 2, -1.5, "CAMERINOS", .42, "lbl-s");
     txt(g, (bx(782) + bx(912)) / 2, 20.1, "CABINA DE", .38, "lbl-s");
     txt(g, (bx(782) + bx(912)) / 2, 19.6, "CONTROL", .38, "lbl-s");
     txt(g, (bx(678) + bx(782)) / 2, 20.4, "SANITARIOS", .32, "lbl-s");
@@ -758,7 +758,7 @@ function buildB(){
     });
     dim(g, -X, 23.0, X, 23.0, "≈ 14.84 m", {fs: .48, at: .3});
     dim(g, -8.05, 0, -8.05, D, "≈ 21.89 m", {fs: .48, at: .62});
-    dim(g, -8.1, bd(92), -8.1, 0, "≈ 2.74", {fs: .38});
+    dim(g, 8.1, bd(92), 8.1, 0, "≈ 2.74", {fs: .38, side: -1});
     dim(g, bx(683), 5.6, bx(1010), 5.6, "≈ 11.18 (22 butacas)", {fs: .38});
     dim(g, 1.1, 0, 1.1, bd(312), "≈ 4.79", {fs: .38, side: -1});
     dim(g, 6.0, bd(360 + 12 * 25.4), 6.0, bd(360 + 13 * 25.4), "≈ 0.87", {fs: .3, side: -1});
