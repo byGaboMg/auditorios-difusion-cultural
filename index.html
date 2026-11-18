@@ -958,6 +958,8 @@ const INFO = {
 };
 const VIEWS = {normal: {label: "Butacas", hash: ""}, tech: {label: "Vista técnica", hash: "tecnica"}, audio: {label: "Audio", hash: "audio"}, luces: {label: "Iluminación", hash: "iluminacion"}, video: {label: "Video", hash: "video"}, "3d": {label: "Modelo 3D", hash: "3d"}};
 const EQUIP_VIEWS = ["audio", "luces", "video"];
+// Subir este número cada vez que cambie modelo-3d.html, para que el navegador no use una copia vieja
+const MODEL3D_VERSION = "4";
 
 /* ---------------- Estado ---------------- */
 const state = {aud: "A", view: "normal", sel: null, filter: null, efilter: null, proj: {A: "cabina", B: "techo"}, imgW: {A: MODELS.A.video.defaultW, B: MODELS.B.video.defaultW}};
@@ -1176,7 +1178,7 @@ function renderSide(){
     h += `<section class="card"><h2>Modelo 3D · ${esc(M.title)}</h2>
       <p class="note" style="margin-top:0">Modelo generado a partir de los planos y las medidas. Gíralo arrastrando, usa las cámaras predefinidas o escribe una butaca para ver el escenario desde ese lugar.</p>
       <p class="note">${state.aud === "A" ? "Incluye el descanso entre las filas H y K, los accesos públicos, los accesos del escenario y la pantalla de 10 m." : "Las medidas horizontales del Auditorio B son estimadas (≈) a escala del plano; las alturas salen de los niveles del corte."}</p>
-      <a class="btnlink" href="modelo-3d.html#${state.aud}" target="_blank" rel="noopener">Abrir en pantalla completa</a></section>`;
+      <a class="btnlink" href="modelo-3d.html?v=${MODEL3D_VERSION}#${state.aud}" target="_blank" rel="noopener">Abrir en pantalla completa</a></section>`;
   }
   side.innerHTML = h;
   const cb =document.getElementById("clearSel");
@@ -1211,7 +1213,7 @@ function applyViewClasses(){
   const fr = document.getElementById("frame3d");
   fr.hidden = state.view !== "3d";
   if (state.view === "3d"){
-    const src = "modelo-3d.html?embed=1#" + state.aud;
+    const src = `modelo-3d.html?embed=1&v=${MODEL3D_VERSION}#${state.aud}`;
     if (fr.getAttribute("src") !== src) fr.setAttribute("src", src);
   }
   document.getElementById("hint").textContent = EQUIP_VIEWS.includes(state.view) ? "Arrastra para mover · rueda o pellizco para zoom · toca un equipo" : "Arrastra para mover · rueda o pellizco para zoom · toca una butaca";
