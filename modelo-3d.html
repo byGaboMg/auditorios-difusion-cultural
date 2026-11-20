@@ -5,42 +5,46 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Modelo 3D Auditorios</title>
 <meta name="description" content="Prueba: modelo 3D de los auditorios A y B generado a partir de los planos y medidas, con vista desde cualquier butaca.">
-<meta name="theme-color" content="#7b1e3c">
+<meta name="theme-color" content="#611232">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --brand:#7b1e3c; --bg:#f5f3ef; --surface:#ffffff; --surface-2:#f8f5f1; --ink:#1f1b19; --muted:#6f6762; --line:#e4ded6;
-  --accent:#7b1e3c; --accent-ink:#fff; --scene:#e7e1d8; --sel:#f2b705;
+  --brand:#611232; --gold:#bc955c; --nav:#393939; --bg:#f5f3ef; --surface:#ffffff; --surface-2:#f8f5f1; --ink:#1f1b19; --muted:#6f6762; --line:#e4ded6;
+  --accent:#611232; --accent-ink:#fff; --scene:#e7e1d8; --sel:#f2b705;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --bg:#151312; --surface:#1e1b19; --surface-2:#252220; --ink:#efe9e4; --muted:#a59c95; --line:#36302c;
-    --accent:#d9718f; --accent-ink:#1a0d12; --scene:#16181b; color-scheme: dark;
+    --accent:#d98aa6; --accent-ink:#2a0a17; --scene:#16181b; color-scheme: dark;
   }
 }
 :root[data-theme="dark"]{
   --bg:#151312; --surface:#1e1b19; --surface-2:#252220; --ink:#efe9e4; --muted:#a59c95; --line:#36302c;
-  --accent:#d9718f; --accent-ink:#1a0d12; --scene:#16181b; color-scheme: dark;
+  --accent:#d98aa6; --accent-ink:#2a0a17; --scene:#16181b; color-scheme: dark;
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{margin:0}
-body{background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 "Red Hat Display",system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
 body::before{content:"";display:block;height:6px;background:var(--brand)}
 button,input{font:inherit;color:inherit}
 button{cursor:pointer}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 .bar{display:flex;align-items:center;gap:14px;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--surface);flex-wrap:wrap}
-.logo{background:#fff;border:1px solid var(--line);border-radius:12px;padding:6px 10px;line-height:0;flex:none}
+.logo{background:#fff;border:1px solid var(--line);border-radius:12px;padding:6px 10px;line-height:0;flex:none;display:flex;gap:10px;align-items:center}
+.logo img.ipn{height:44px}
 .logo img{height:36px;width:auto}
 .ttl{min-width:0;flex:1 1 200px}
 .ttl b{display:block;font-size:18px;line-height:1.2}
 .ttl small{color:var(--muted);font-size:13px}
 .pill{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:2px 8px;margin-left:6px;vertical-align:2px}
-.seg{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:3px}
-.seg button{border:0;background:none;padding:7px 14px;border-radius:9px;font-weight:700;color:var(--muted);white-space:nowrap}
-.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.seg{display:inline-flex;background:var(--nav);border:1px solid var(--nav);border-radius:12px;padding:3px}
+.seg button{border:0;background:none;padding:7px 14px;border-radius:9px;font-weight:700;color:rgba(255,255,255,.82);white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--brand);color:#fff;box-shadow:inset 0 -2px 0 var(--gold)}
 
 .main{display:grid;grid-template-columns:minmax(0,1fr) 330px;height:calc(100vh - 6px - 65px);height:calc(100dvh - 6px - 65px);min-height:520px}
 .view{position:relative;background:var(--scene);overflow:hidden;min-width:0;touch-action:none}
@@ -57,14 +61,15 @@ button{cursor:pointer}
 
 aside{border-left:1px solid var(--line);background:var(--bg);overflow:auto;padding:14px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:12px}
-.card h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+.card h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 12px;font-weight:800}
+.card h2::after{content:"";display:block;width:28px;height:2px;background:var(--gold);margin-top:6px}
 .btns{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .btns button{border:1px solid var(--line);background:var(--surface-2);border-radius:10px;padding:8px 10px;font-weight:600;font-size:14px;text-align:left}
 .btns button:hover{border-color:var(--muted)}
 .btns button.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);background:var(--surface)}
 .search{display:flex;gap:6px}
 .search input{flex:1;min-width:0;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
-.search button{border:1px solid var(--line);background:var(--accent);color:var(--accent-ink);border-radius:10px;padding:8px 12px;font-weight:700}
+.search button{border:1px solid var(--brand);background:var(--brand);color:#fff;border-radius:10px;padding:8px 12px;font-weight:700}
 .msg{font-size:13px;color:var(--muted);margin:8px 0 0}
 .msg:empty{display:none}
 .toggles{display:grid;gap:8px}
@@ -105,7 +110,7 @@ ul.note li{margin:3px 0}
 </head>
 <body>
 <header class="bar">
-  <span class="logo"><img src="difusion-cultural.png" alt="Dirección de Difusión Cultural" width="384" height="133"></span>
+  <span class="logo"><img class="ipn" src="ipn.png" alt="Instituto Politécnico Nacional" width="203" height="291"><img src="difusion-cultural.png" alt="Dirección de Difusión Cultural" width="384" height="133"></span>
   <div class="ttl"><b>Modelo 3D de los auditorios <span class="pill">Prueba</span></b><small>Generado a partir de los planos y medidas · arrastra para girar</small></div>
   <div class="seg" role="group" aria-label="Auditorio">
     <button data-aud="A" aria-pressed="true">Auditorio A</button>
@@ -210,7 +215,7 @@ const M = {
   wall: new THREE.MeshStandardMaterial({color: 0xefe9df, roughness: .9, transparent: true, opacity: .13, side: THREE.DoubleSide, depthWrite: false}),
   ceil: new THREE.MeshStandardMaterial({color: 0xd9d2c7, roughness: .9, transparent: true, opacity: .35, side: THREE.DoubleSide, depthWrite: false}),
   solid: new THREE.MeshStandardMaterial({color: 0xd8d0c4, roughness: .9}),
-  glass: new THREE.MeshStandardMaterial({color: 0x8ec5ff, roughness: .1, transparent: true, opacity: .28, side: THREE.DoubleSide, depthWrite: false}),
+  glass: new THREE.MeshStandardMaterial({color: 0xe3f0ff, roughness: .1, transparent: true, opacity: .12, side: THREE.DoubleSide, depthWrite: false}),
   black: new THREE.MeshStandardMaterial({color: 0x18181a, roughness: .95, side: THREE.DoubleSide}),
   metal: new THREE.MeshStandardMaterial({color: 0x55585e, roughness: .4, metalness: .6}),
   cyc: new THREE.MeshStandardMaterial({color: 0x9fc4ff, emissive: 0x2a4a7a, emissiveIntensity: .5, side: THREE.DoubleSide}),
@@ -364,8 +369,6 @@ function buildA(){
     const a = [s * 8.12, 8.23], b = [s * 8.78, 9.47];
     root.add(quad(a, b, ST, ST + 2.4, ST, ST + 2.4, M.door));
     labels.add(label("Acceso escenario", s * 9.6, ST + 3, 8.9));
-    root.add(quad(pol(27.2, s * (W - .003)), pol(28.1, s * (W - .003)), 2.3, 4.6, 2.3, 4.6, M.door));
-    const [x, d] = pol(27.65, s * W); labels.add(label("Acceso", x + s * 1.2, 5.2, d));
   });
   // Nivel superior por zonas: [ángulo inicial, ángulo final, primera fila con butacas]
   // Centro: la fila K es la primera → descanso plano entre H y K. Zonas interiores: acceso público (escalera que baja) en I–K.
@@ -439,7 +442,7 @@ function buildA(){
     cams: {
       general: [[-28, 42, 56], [0, 1, 15]],
       escenario: [[0, ST + 1.7, 7.5], [0, 5, 30]],
-      cabina: [[0, 9.4, 33.6], [0, 2.5, 6]],
+      cabina: [[0, 9.2, 32.2], [0, 2.5, 6]],
       arriba: [[0, 70, 17.5], [0, 0, 17.4]]
     },
     legend: [["PI", "Platea izq. / der."], ["PC", "Platea central"], ["AL", "Anfiteatro lateral"], ["AI", "Anfiteatro interior"], ["AC", "Anfiteatro central"], ["FP", "Fila posterior"], ["SR", "Silla de ruedas"]],
@@ -529,7 +532,7 @@ function buildB(){
     cams: {
       general: [[-15, 19, 30], [0, .8, 9]],
       escenario: [[0, ST + 1.65, 3.2], [0, 1.2, 20]],
-      cabina: [[0, CAB + 1.2, 20.0], [0, 1.2, 2]],
+      cabina: [[0, CAB + 1.1, 18.35], [0, 1.2, 2]],
       arriba: [[0, 40, 9.6], [0, 0, 9.55]]
     },
     legend: [["LU", "Luneta (filas A–N)"]],
